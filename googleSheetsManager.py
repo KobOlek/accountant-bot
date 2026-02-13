@@ -100,31 +100,30 @@ def fit_data_to_members_sheet_format(data: list[str]) -> list[str, int]:
 
     current_year = date.today().year
     members_birth_dates = members_sheet.col_values(4)
+    print(members_birth_dates)
 
     last_indexes = [0 for i in range(3)]
 
+    age_categories = [range(19, 26), range(16, 19), range(14, 16)]
+    age_categories = list(map(list, age_categories))
     for index, d in enumerate(members_birth_dates):
         try:
             if not datetime.datetime.strptime(d, "%d.%m.%Y"):
                 continue
-        except:
-            pass
+        except Exception as e:
+            print(e)
         else:
-            if current_year-int(d.split(".")[-1]) in range(18, 26):
-                last_indexes[0] = index
-            elif current_year-int(d.split(".")[-1]) in range(16, 18):
-                last_indexes[1] = index
-            elif current_year-int(d.split(".")[-1]) in range(14, 16):
-                last_indexes[2] = index
+            member_age = current_year-int(d.split(".")[-1])
+            for i, cat in enumerate(age_categories):
+                if member_age in cat:
+                    last_indexes[i] = index
 
-    row_index = 100
+    row_index = None
     recruit_birth_date_year = int(birth_date.split(".")[-1])
-    if current_year - recruit_birth_date_year in range(18, 26):
-        row_index = last_indexes[0]
-    elif current_year - int(d.split(".")[-1]) in range(16, 18):
-        row_index = last_indexes[1]
-    elif current_year - int(d.split(".")[-1]) in range(14, 16):
-        row_index = last_indexes[2]
+    recruit_age = current_year-recruit_birth_date_year
+    for i, cat in enumerate(age_categories):
+        if recruit_age in cat:
+            row_index = last_indexes[i]
     row_index += 2  # +2 because in google sheets indexation starts with 1 and +1 to set to the next row
 
     num = int(members_sheet.col_values(1)[row_index-2])+1
