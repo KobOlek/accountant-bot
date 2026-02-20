@@ -12,8 +12,6 @@ def clean_data(data_list):
             data_list.remove(row)
 
 def get_phone_numbers() -> list:
-    global sheet_id, scopes, creds, client
-
     phone_numbers = []
 
     workbook = client.open_by_key(sheet_id)
@@ -80,6 +78,26 @@ def format_blood_group(blood_group: str) -> str:
         return s
     return blood_group
 
+def actualize_member_data(members_sheet, added_member_row: int):
+    try:
+        col_a_values = members_sheet.col_values(1)
+        start_index = added_member_row
+        updated_column_chuck = []
+
+        for i, val in enumerate(col_a_values[start_index:]):
+            if val.isdigit():
+                updated_column_chuck.append([int(val)+1])
+            else:
+                updated_column_chuck.append([val])
+
+        if updated_column_chuck:
+            end_row = added_member_row + len(updated_column_chuck)
+            range_to_update = f"A{added_member_row+1}:A{end_row}"
+
+            members_sheet.update(range_to_update, updated_column_chuck)
+    except:
+        pass
+
 def fit_data_to_members_sheet_format(data: list[str]) -> list[str, int]:
     global sheet_id, scopes, creds, client
     workbook = client.open_by_key(sheet_id)
@@ -100,7 +118,6 @@ def fit_data_to_members_sheet_format(data: list[str]) -> list[str, int]:
 
     current_year = date.today().year
     members_birth_dates = members_sheet.col_values(4)
-    print(members_birth_dates)
 
     last_indexes = [0 for i in range(3)]
 
@@ -148,6 +165,7 @@ def add_new_recruits():
     members_sheet.insert_row(fitted_data, row_index)
 
     style_cells(members_sheet, row_index)
+    actualize_member_data(members_sheet, row_index)
 
 def style_cells(members_sheet, row):
     # Cell styles
